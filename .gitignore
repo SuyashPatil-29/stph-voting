@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Uploaded candidate photos (runtime files)
+/public/uploads/*
+!/public/uploads/.gitkeep
