@@ -51,19 +51,19 @@ export default function VoteBooth({
   }
 
   return (
-    <main className="kiosk-no-select flex min-h-screen flex-col p-6 sm:p-8">
-      <header className="mb-6 text-center">
+    <main className="kiosk-no-select flex min-h-screen flex-col p-4 sm:p-6">
+      <header className="mb-3 text-center">
         <h1 className="text-2xl font-bold text-slate-800 sm:text-3xl">
           {electionTitle}
         </h1>
-        <p className="mt-1 text-base text-slate-500">
+        <p className="mt-0.5 text-base text-slate-500">
           Tap your group, then press{" "}
           <span className="font-semibold">Submit Vote</span>.
         </p>
       </header>
 
       <div
-        className="grid flex-1 content-start gap-5"
+        className="grid flex-1 content-start gap-3"
         style={{
           gridTemplateColumns:
             "repeat(auto-fit, minmax(min(100%, 320px), 1fr))",
@@ -78,7 +78,7 @@ export default function VoteBooth({
               onClick={() => setSelectedId(group.id)}
               aria-pressed={selected}
               className={[
-                "relative flex flex-col rounded-3xl border-4 p-5 text-left transition-all",
+                "relative flex flex-col rounded-3xl border-4 p-4 text-left transition-all",
                 selected
                   ? "border-emerald-500 bg-emerald-50 shadow-xl ring-4 ring-emerald-200"
                   : "border-slate-200 bg-white shadow-sm hover:border-slate-300 hover:shadow-md",
@@ -97,14 +97,14 @@ export default function VoteBooth({
                 ✓
               </span>
 
-              <div className="mb-4 flex flex-col items-center gap-3 text-center">
+              <div className="mb-3 flex flex-col items-center gap-2 text-center">
                 {group.photoUrl && (
                   <Image
                     src={group.photoUrl}
                     alt={group.name}
                     width={160}
                     height={160}
-                    className="h-32 w-32 shrink-0 rounded-2xl object-cover sm:h-40 sm:w-40"
+                    className="h-24 w-24 shrink-0 rounded-2xl object-cover sm:h-28 sm:w-28"
                   />
                 )}
                 <h2 className="text-2xl font-bold text-slate-800">
@@ -112,7 +112,7 @@ export default function VoteBooth({
                 </h2>
               </div>
 
-              <ul className="flex flex-col gap-3">
+              <ul className="flex flex-col gap-2">
                 {group.candidates.map((c) => (
                   <li key={c.id} className="flex items-center gap-3">
                     {c.photoUrl ? (
@@ -121,10 +121,10 @@ export default function VoteBooth({
                         alt={c.name}
                         width={56}
                         height={56}
-                        className="h-14 w-14 rounded-full object-cover"
+                        className="h-11 w-11 rounded-full object-cover"
                       />
                     ) : (
-                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-slate-100 text-lg font-semibold text-slate-400">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-slate-100 text-lg font-semibold text-slate-400">
                         {c.name.charAt(0).toUpperCase()}
                       </div>
                     )}
@@ -149,13 +149,13 @@ export default function VoteBooth({
         })}
       </div>
 
-      <footer className="sticky bottom-0 mt-6 flex flex-col items-center gap-2 pt-4">
+      <footer className="sticky bottom-0 mt-3 flex flex-col items-center gap-2 pt-3">
         <button
           type="button"
           onClick={handleSubmit}
           disabled={selectedId === null || isPending}
           className={[
-            "w-full max-w-xl rounded-2xl px-8 py-5 text-2xl font-bold transition-colors",
+            "w-full max-w-xl rounded-2xl px-8 py-4 text-2xl font-bold transition-colors",
             selectedId === null
               ? "cursor-not-allowed bg-slate-200 text-slate-400"
               : "bg-emerald-600 text-white shadow-lg hover:bg-emerald-700 active:bg-emerald-800",
