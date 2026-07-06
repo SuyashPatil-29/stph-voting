@@ -95,6 +95,15 @@ export default async function SetupPage() {
             placeholder="New group name"
             className="flex-1 rounded-lg border border-slate-300 px-3 py-2"
           />
+          <label className="flex items-center gap-2 text-xs text-slate-500">
+            Image (optional)
+            <input
+              type="file"
+              name="photo"
+              accept="image/*"
+              className="text-xs"
+            />
+          </label>
           <button className="rounded-lg bg-slate-800 px-4 py-2 font-medium text-white hover:bg-slate-900">
             + Add group
           </button>

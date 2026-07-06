@@ -6,6 +6,8 @@ import type { GroupWithCandidates } from "@/lib/queries";
 import {
   renameGroup,
   deleteGroup,
+  setGroupPhoto,
+  removeGroupPhoto,
   createCandidate,
   updateCandidate,
   deleteCandidate,
@@ -195,6 +197,50 @@ export function GroupCard({ group }: { group: GroupWithCandidates }) {
               </form>
             </div>
           </>
+        )}
+      </div>
+
+      {/* Group image */}
+      <div className="mb-4 flex flex-wrap items-center gap-4 rounded-xl bg-slate-50 p-3">
+        {group.photoUrl ? (
+          <Image
+            src={group.photoUrl}
+            alt={group.name}
+            width={64}
+            height={64}
+            className="h-16 w-16 rounded-lg object-cover"
+          />
+        ) : (
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-slate-200 text-2xl text-slate-400">
+            🏳️
+          </div>
+        )}
+        <form
+          action={setGroupPhoto}
+          className="flex flex-1 flex-wrap items-center gap-2"
+        >
+          <input type="hidden" name="groupId" value={group.id} />
+          <input
+            type="file"
+            name="photo"
+            accept="image/*"
+            required
+            className="text-xs"
+          />
+          <button className="rounded-md bg-slate-800 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-900">
+            {group.photoUrl ? "Replace image" : "Add image"}
+          </button>
+        </form>
+        {group.photoUrl && (
+          <form action={removeGroupPhoto}>
+            <input type="hidden" name="groupId" value={group.id} />
+            <ConfirmSubmit
+              message={`Remove the image for "${group.name}"?`}
+              className="rounded-md px-2 py-1 text-sm text-red-500 hover:bg-red-50"
+            >
+              Remove image
+            </ConfirmSubmit>
+          </form>
         )}
       </div>
 

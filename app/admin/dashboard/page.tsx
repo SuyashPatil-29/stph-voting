@@ -1,5 +1,6 @@
 import { getActiveElection, getTallies } from "@/lib/queries";
 import AutoRefresh from "../auto-refresh";
+import ClearVotes from "../clear-votes";
 
 export const dynamic = "force-dynamic";
 
@@ -38,7 +39,10 @@ export default async function DashboardPage() {
           </h1>
           <p className="text-slate-500">Live results</p>
         </div>
-        <AutoRefresh />
+        <div className="flex items-center gap-4">
+          <ClearVotes totalVotes={totalVotes} />
+          <AutoRefresh />
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">

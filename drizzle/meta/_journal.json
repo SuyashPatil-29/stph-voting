@@ -8,6 +8,20 @@
       "when": 1783233570972,
       "tag": "0000_special_lockheed",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1783314924245,
+      "tag": "0001_lumpy_celestials",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1783315247200,
+      "tag": "0002_worried_risque",
+      "breakpoints": true
     }
   ]
 }

@@ -63,7 +63,16 @@ export default async function HistoryDetailPage({
               ].join(" ")}
             >
               <div className="mb-3 flex items-baseline justify-between gap-3">
-                <h2 className="text-lg font-bold text-slate-800">
+                <h2 className="flex items-center gap-2 text-lg font-bold text-slate-800">
+                  {roster?.photoUrl && (
+                    <Image
+                      src={roster.photoUrl}
+                      alt={t.name}
+                      width={32}
+                      height={32}
+                      className="h-8 w-8 rounded-md object-cover"
+                    />
+                  )}
                   {t.name}
                   {isLeader && (
                     <span className="ml-2 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">

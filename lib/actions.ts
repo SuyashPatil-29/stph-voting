@@ -1,19 +1,14 @@
 "use server";
 
 import { db } from "@/db";
-import { elections, groups, candidates, votes } from "@/db/schema";
+import { elections, groups, candidates, votes, images } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { randomUUID } from "node:crypto";
-import { writeFile, mkdir } from "node:fs/promises";
-import path from "node:path";
 
 // NOTE: There is intentionally no authentication here. The security model
 // for this kiosk is physical (one trusted machine on a local network).
 // TODO(v1): add admin auth before exposing /admin beyond the local device.
-
-const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
 
 async function requireActiveElection() {
   const active = await db.query.elections.findFirst({
@@ -25,19 +20,31 @@ async function requireActiveElection() {
   return active;
 }
 
-/** Persist an uploaded image to /public/uploads and return its public path. */
+// Reject anything larger than this to keep DB rows sane. Must stay under the
+// Server Action bodySizeLimit configured in next.config.ts.
+const MAX_IMAGE_BYTES = 4 * 1024 * 1024; // 4 MB
+
+/**
+ * Store an uploaded image as a bytea row in Postgres and return a URL that
+ * the /api/images/[id] route handler serves it from. Returns null when no
+ * file was provided (so callers can leave photoUrl unchanged).
+ */
 async function savePhoto(file: File | null): Promise<string | null> {
   if (!file || file.size === 0) return null;
   if (!file.type.startsWith("image/")) {
     throw new Error("Uploaded file must be an image.");
   }
+  if (file.size > MAX_IMAGE_BYTES) {
+    throw new Error("Image is too large (max 4 MB).");
+  }
 
-  await mkdir(UPLOAD_DIR, { recursive: true });
-  const ext = path.extname(file.name) || ".jpg";
-  const filename = `${randomUUID()}${ext}`;
-  const bytes = Buffer.from(await file.arrayBuffer());
-  await writeFile(path.join(UPLOAD_DIR, filename), bytes);
-  return `/uploads/${filename}`;
+  const data = Buffer.from(await file.arrayBuffer());
+  const [row] = await db
+    .insert(images)
+    .values({ mimeType: file.type, data })
+    .returning({ id: images.id });
+
+  return `/api/images/${row.id}`;
 }
 
 // --------------------------------------------------------------------------
@@ -57,12 +64,41 @@ export async function createGroup(formData: FormData) {
   const nextOrder =
     existing.reduce((max, g) => Math.max(max, g.displayOrder), -1) + 1;
 
+  const photoUrl = await savePhoto(formData.get("photo") as File | null);
+
   await db.insert(groups).values({
     electionId: active.id,
     name,
     displayOrder: nextOrder,
+    photoUrl,
   });
 
+  revalidatePath("/admin");
+  revalidatePath("/");
+}
+
+/**
+ * Add or replace the image on an existing group without touching any other
+ * data. Safe to run against groups that already have candidates/votes.
+ */
+export async function setGroupPhoto(formData: FormData) {
+  const id = Number(formData.get("groupId"));
+  if (!id) throw new Error("Group id is required.");
+
+  const photoUrl = await savePhoto(formData.get("photo") as File | null);
+  if (!photoUrl) throw new Error("Please choose an image to upload.");
+
+  await db.update(groups).set({ photoUrl }).where(eq(groups.id, id));
+  revalidatePath("/admin");
+  revalidatePath("/");
+}
+
+/** Remove a group's image (keeps the group and everything else). */
+export async function removeGroupPhoto(formData: FormData) {
+  const id = Number(formData.get("groupId"));
+  if (!id) throw new Error("Group id is required.");
+
+  await db.update(groups).set({ photoUrl: null }).where(eq(groups.id, id));
   revalidatePath("/admin");
   revalidatePath("/");
 }
@@ -199,6 +235,19 @@ export async function resetElection(formData: FormData) {
   revalidatePath("/admin/history");
   revalidatePath("/");
   redirect("/admin");
+}
+
+/**
+ * Wipe all votes for the current active election without archiving it or
+ * touching its groups/candidates. Resets the live tallies to zero so the
+ * same ballot can be re-run. Destructive to counts only.
+ */
+export async function clearVotes() {
+  const active = await requireActiveElection();
+  await db.delete(votes).where(eq(votes.electionId, active.id));
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/dashboard");
 }
 
 /** Rename the active election (used on the setup screen). */

@@ -11,7 +11,7 @@ type Props = {
 };
 
 // How long the "thank you" confirmation stays up before resetting.
-const THANK_YOU_MS = 2500;
+const THANK_YOU_MS = 500;
 
 export default function VoteBooth({
   electionTitle,
@@ -78,27 +78,38 @@ export default function VoteBooth({
               onClick={() => setSelectedId(group.id)}
               aria-pressed={selected}
               className={[
-                "flex flex-col rounded-3xl border-4 p-5 text-left transition-all",
+                "relative flex flex-col rounded-3xl border-4 p-5 text-left transition-all",
                 selected
                   ? "border-emerald-500 bg-emerald-50 shadow-xl ring-4 ring-emerald-200"
                   : "border-slate-200 bg-white shadow-sm hover:border-slate-300 hover:shadow-md",
               ].join(" ")}
             >
-              <div className="mb-4 flex items-center justify-between gap-3">
+              {/* Selection check, pinned to the card corner. */}
+              <span
+                className={[
+                  "absolute right-4 top-4 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 text-lg",
+                  selected
+                    ? "border-emerald-500 bg-emerald-500 text-white"
+                    : "border-slate-300 text-transparent",
+                ].join(" ")}
+                aria-hidden
+              >
+                ✓
+              </span>
+
+              <div className="mb-4 flex flex-col items-center gap-3 text-center">
+                {group.photoUrl && (
+                  <Image
+                    src={group.photoUrl}
+                    alt={group.name}
+                    width={160}
+                    height={160}
+                    className="h-32 w-32 shrink-0 rounded-2xl object-cover sm:h-40 sm:w-40"
+                  />
+                )}
                 <h2 className="text-2xl font-bold text-slate-800">
                   {group.name}
                 </h2>
-                <span
-                  className={[
-                    "flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 text-lg",
-                    selected
-                      ? "border-emerald-500 bg-emerald-500 text-white"
-                      : "border-slate-300 text-transparent",
-                  ].join(" ")}
-                  aria-hidden
-                >
-                  ✓
-                </span>
               </div>
 
               <ul className="flex flex-col gap-3">

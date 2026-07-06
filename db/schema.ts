@@ -6,8 +6,16 @@ import {
   text,
   timestamp,
   index,
+  customType,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
+
+// Postgres `bytea` — drizzle has no built-in helper, so define one.
+const bytea = customType<{ data: Buffer; default: false }>({
+  dataType() {
+    return "bytea";
+  },
+});
 
 export const electionStatus = pgEnum("election_status", ["active", "archived"]);
 
@@ -34,6 +42,8 @@ export const groups = pgTable(
       .references(() => elections.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
     displayOrder: integer("display_order").notNull().default(0),
+    // Optional group logo/banner. Nullable so existing rows are untouched.
+    photoUrl: text("photo_url"),
   },
   (t) => [index("groups_election_id_idx").on(t.electionId)],
 );
@@ -76,6 +86,19 @@ export const votes = pgTable(
   ],
 );
 
+// Uploaded images live in the DB itself (bytea) so nothing depends on the
+// local/serverless filesystem. Kept in a dedicated table so pulling a
+// group/candidate row never drags the binary blob along with it — the blob
+// is only read by the /api/images/[id] route handler.
+export const images = pgTable("images", {
+  id: serial("id").primaryKey(),
+  mimeType: text("mime_type").notNull(),
+  data: bytea("data").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
 // --- Relations (used by the drizzle relational query API) ---
 
 export const electionsRelations = relations(elections, ({ many }) => ({
@@ -110,6 +133,7 @@ export const votesRelations = relations(votes, ({ one }) => ({
   }),
 }));
 
+export type Image = typeof images.$inferSelect;
 export type Election = typeof elections.$inferSelect;
 export type Group = typeof groups.$inferSelect;
 export type Candidate = typeof candidates.$inferSelect;

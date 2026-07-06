@@ -7,6 +7,7 @@ export type GroupWithCandidates = {
   id: number;
   name: string;
   displayOrder: number;
+  photoUrl: string | null;
   candidates: {
     id: number;
     name: string;
@@ -42,6 +43,7 @@ export async function getGroupsWithCandidates(
     id: g.id,
     name: g.name,
     displayOrder: g.displayOrder,
+    photoUrl: g.photoUrl,
     candidates: g.candidates.map((c) => ({
       id: c.id,
       name: c.name,
